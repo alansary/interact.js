@@ -1,9 +1,28 @@
+/* eslint-disable */
+
+/**
+ * @module modifiers/aspectRatio
+ *
+ * @description
+ * This module forces elements to be resized with a specified dx/dy ratio.
+ *
+ * @example
+ * interact(target).resizable({
+ *   modifiers: [
+ *     interact.modifiers.snapSize({
+ *       targets: [ interact.createSnapGrid({ x: 20, y: 20 }) ],
+ *     }),
+ *     interact.aspectRatio({ ratio: 'preserve' }),
+ *   ],
+ * });
+ */
+
 import * as is from '@interactjs/utils/is'
 import extend from '@interactjs/utils/extend'
 
 export default {
   start ({ interaction, status, rect, pageCoords }) {
-    let { options: { ratio } } = status
+    let { ratio, fix } = status.options
 
     if (is.func(ratio)) {
       ratio = ratio(interaction)
@@ -14,11 +33,11 @@ export default {
     }
     else if (ratio === 'square') {
       ratio = 1
+      fix = false
     }
 
     status.startCoords = extend({}, pageCoords)
     status.startRect = extend({}, rect)
-    status.ratio = ratio
     const originalEdges = status.originalEdges = interaction.edges
 
     status.linkedEdges = interaction.edges = {
@@ -29,21 +48,24 @@ export default {
     }
   },
 
-  set ({ status, coords }) {
-    const { startCoords, ratio, originalEdges } = status
+  set ({ status, coords, rect }) {
+    const { startCoords, originalEdges, options: { ratio } } = status
 
     const dx0 = coords.x - startCoords.x
     const dy0 = coords.y - startCoords.y
 
-    let dx = dx0
-    let dy = dy0
+    const dx = dx0
+    const dy = dy0
 
-    if ((originalEdges.left && originalEdges.bottom) ||
-         (originalEdges.right && originalEdges.top)) {
-      dy = dx / ratio
+    const width = rect.right - rect.left
+    const height = rect.bottom - rect.top
+
+    debugger
+
+    const primaryAxis = originalEdges.left || originalEdges.right ? 'x'  : 'y'
+
+    if (primaryAxis === 'x') {
     }
-    else if (originalEdges.left || originalEdges.right) { dy = dx / ratio }
-    else if (originalEdges.top  || originalEdges.bottom) { dx = dy * ratio }
 
     coords.x = startCoords.x + dx
     coords.y = startCoords.y + dy
